@@ -19,6 +19,7 @@ struct EmojiArtDocumentView: View {
     @State private var pan: CGOffset = .zero
     @GestureState private var gestureZoom: CGFloat = 1
     @GestureState private var gesturePan: CGOffset = .zero
+    @GestureState private var selectionGesturePan: CGOffset = .zero
     
     @State private var selection = Set<Emoji.ID>()
     
@@ -68,16 +69,25 @@ private extension EmojiArtDocumentView {
                     .in(geometry)
             )
         ForEach(document.emojis) { emoji in
+            let isSelected = selection
+                .contains(emoji.id)
+            
             Text(emoji.string)
                 .font(emoji.font)
                 .border(
-                    selection.contains(emoji.id) ? .red : .clear,
+                    isSelected && selectionGesturePan == .zero ? .red : .clear,
                     width: borderWidth
                 )
                 .position(emoji.position.in(geometry))
+                .offset(
+                    isSelected ? selectionGesturePan : .zero
+                )
                 .onTapGesture {
                     selection.toggle(emoji.id)
                 }
+                .gesture(
+                    isSelected ? selectionPanGesture: nil
+                )
         }
     }
     
@@ -102,6 +112,23 @@ private extension EmojiArtDocumentView {
             }
             .onEnded { endingDragGestureValue in
                 pan += endingDragGestureValue.translation
+            }
+    }
+    
+    var selectionPanGesture: some Gesture {
+        DragGesture()
+            .updating(
+                $selectionGesturePan
+            ) { inMotionDragGestureValue, gesturePan, _ in
+                gesturePan = inMotionDragGestureValue.translation
+            }
+            .onEnded { endingDragGestureValue in
+                selection.forEach {
+                    document.move(
+                        emojiWithId: $0,
+                        by: endingDragGestureValue.translation
+                    )
+                }
             }
     }
     
