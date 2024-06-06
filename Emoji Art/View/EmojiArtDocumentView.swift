@@ -13,12 +13,14 @@ struct EmojiArtDocumentView: View {
     @ObservedObject var document: EmojiArtDocument
     
     private let paletteEmojiSize: CGFloat = 40
+    private let borderWidth: CGFloat = 2
     
     @State private var zoom: CGFloat = 1
     @State private var pan: CGOffset = .zero
-    
     @GestureState private var gestureZoom: CGFloat = 1
     @GestureState private var gesturePan: CGOffset = .zero
+    
+    @State private var selection = Set<Emoji.ID>()
     
     var body: some View {
         VStack(spacing: .zero) {
@@ -65,7 +67,14 @@ private extension EmojiArtDocumentView {
         ForEach(document.emojis) { emoji in
             Text(emoji.string)
                 .font(emoji.font)
+                .border(
+                    selection.contains(emoji.id) ? .red : .clear,
+                    width: borderWidth
+                )
                 .position(emoji.position.in(geometry))
+                .onTapGesture {
+                    selection.toggle(emoji.id)
+                }
         }
     }
     
