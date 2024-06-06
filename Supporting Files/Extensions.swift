@@ -110,7 +110,6 @@ protocol HasIdentifiables {
 }
 
 extension HasIdentifiables {
-    
     subscript(
         _ id: I.ID
     ) -> I? {
@@ -141,7 +140,6 @@ extension HasIdentifiables {
 }
 
 extension Set {
-    
     mutating func toggle(
         _ element: Element
     ) {

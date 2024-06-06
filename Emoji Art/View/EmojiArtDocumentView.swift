@@ -43,6 +43,9 @@ private extension EmojiArtDocumentView {
                     .scaleEffect(zoom * gestureZoom)
                     .offset(pan + gesturePan)
             }
+            .onTapGesture {
+                selection.removeAll()
+            }
             .gesture(
                 panGesture
                     .simultaneously(with: zoomGesture)
