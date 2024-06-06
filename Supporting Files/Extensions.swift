@@ -125,6 +125,7 @@ extension HasIdentifiables {
                 .map { identifiables[$0] }
             ?? identifiable // should probably throw error
         }
+        
         set {
             index(of: identifiable.id)
                 .map { identifiables[$0] = newValue }

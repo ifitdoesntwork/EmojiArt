@@ -103,6 +103,7 @@ extension EmojiArt.Emoji.Position {
         let center = geometry
             .frame(in: .local)
             .center
+        
         return .init(
             x: center.x + CGFloat(x),
             y: center.y - CGFloat(y)

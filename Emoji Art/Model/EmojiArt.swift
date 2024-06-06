@@ -20,6 +20,7 @@ struct EmojiArt {
         size: Int
     ) {
         uniqueEmojiId += 1
+        
         emojis.append(Emoji(
             string: emoji,
             position: position,
@@ -58,6 +59,7 @@ extension EmojiArt: HasIdentifiables {
         get {
             emojis
         }
+        
         set {
             emojis = newValue
         }

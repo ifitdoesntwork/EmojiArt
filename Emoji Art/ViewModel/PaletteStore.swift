@@ -27,6 +27,7 @@ class PaletteStore: ObservableObject {
     ) {
         self.name = name
         palettes = Palette.builtins
+        
         if palettes.isEmpty {
             palettes = [Palette(name: "Warning", emojis: "⚠️")]
         }
@@ -38,6 +39,7 @@ class PaletteStore: ObservableObject {
         get {
             boundsCheckedPaletteIndex(_cursorIndex)
         }
+        
         set {
             _cursorIndex = boundsCheckedPaletteIndex(newValue)
         }
@@ -47,9 +49,11 @@ class PaletteStore: ObservableObject {
         _ index: Int
     ) -> Int {
         var index = index % palettes.count
+        
         if index < .zero {
             index += palettes.count
         }
+        
         return index
     }
     

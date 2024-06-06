@@ -36,6 +36,7 @@ private extension PaletteChooser {
                 store
                     .insert(name: "Math", emojis: "+−×÷∝∞")
             }
+            
             AnimatedActionButton(
                 "Delete",
                 systemImage: "minus.circle",

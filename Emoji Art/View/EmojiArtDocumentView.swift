@@ -10,6 +10,7 @@ import SwiftUI
 
 struct EmojiArtDocumentView: View {
     typealias Emoji = EmojiArt.Emoji
+    typealias GesturePan = (id: Emoji.ID?, offset: CGOffset)
     @ObservedObject var document: EmojiArtDocument
     
     private let paletteEmojiSize: CGFloat = 40
@@ -19,13 +20,14 @@ struct EmojiArtDocumentView: View {
     @State private var pan: CGOffset = .zero
     @GestureState private var gestureZoom: CGFloat = 1
     @GestureState private var gesturePan: CGOffset = .zero
-    @GestureState private var selectionGesturePan: CGOffset = .zero
+    @GestureState private var selectionGesturePan: GesturePan = (nil, .zero)
     
     @State private var selection = Set<Emoji.ID>()
     
     var body: some View {
         VStack(spacing: .zero) {
             documentBody
+            
             PaletteChooser()
                 .font(.system(size: paletteEmojiSize))
                 .padding(.horizontal)
@@ -94,19 +96,27 @@ private extension EmojiArtDocumentView {
                 }
             }
             .border(
-                isSelected && selectionGesturePan == .zero ? .red : .clear,
+                isSelected
+                && (
+                    selectionGesturePan.offset == .zero
+                    || selectionGesturePan.id != nil
+                )
+                    ? .red : .clear,
                 width: borderWidth
             )
             .scaleEffect(isSelected ? gestureZoom : 1)
             .position(emoji.position.in(geometry))
             .offset(
-                isSelected ? selectionGesturePan : .zero
+                selectionGesturePan.id
+                    .map { $0 == emoji.id }
+                ?? isSelected
+                    ? selectionGesturePan.offset : .zero
             )
             .onTapGesture {
                 selection.toggle(emoji.id)
             }
             .gesture(
-                isSelected ? selectionPanGesture: nil
+                selectionPanGesture(emojiId: isSelected ? nil : emoji.id)
             )
     }
     
@@ -145,15 +155,22 @@ private extension EmojiArtDocumentView {
             }
     }
     
-    var selectionPanGesture: some Gesture {
+    func selectionPanGesture(
+        emojiId: Emoji.ID?
+    ) -> some Gesture {
         DragGesture()
             .updating(
                 $selectionGesturePan
             ) { inMotionDragGestureValue, gesturePan, _ in
-                gesturePan = inMotionDragGestureValue.translation
+                gesturePan = (emojiId, inMotionDragGestureValue.translation)
             }
             .onEnded { endingDragGestureValue in
-                selection.forEach {
+                (
+                    emojiId
+                        .map { Set([$0]) }
+                    ?? selection
+                )
+                .forEach {
                     document.move(
                         emojiWithId: $0,
                         by: endingDragGestureValue.translation
