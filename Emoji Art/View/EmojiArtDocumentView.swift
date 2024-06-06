@@ -41,7 +41,7 @@ private extension EmojiArtDocumentView {
             ZStack {
                 Color.white
                 documentContents(in: geometry)
-                    .scaleEffect(zoom * gestureZoom)
+                    .scaleEffect(zoom * (selection.isEmpty ? gestureZoom : 1))
                     .offset(pan + gesturePan)
             }
             .onTapGesture {
@@ -68,27 +68,37 @@ private extension EmojiArtDocumentView {
                 Emoji.Position.zero
                     .in(geometry)
             )
-        ForEach(document.emojis) { emoji in
-            let isSelected = selection
-                .contains(emoji.id)
-            
-            Text(emoji.string)
-                .font(emoji.font)
-                .border(
-                    isSelected && selectionGesturePan == .zero ? .red : .clear,
-                    width: borderWidth
-                )
-                .position(emoji.position.in(geometry))
-                .offset(
-                    isSelected ? selectionGesturePan : .zero
-                )
-                .onTapGesture {
-                    selection.toggle(emoji.id)
-                }
-                .gesture(
-                    isSelected ? selectionPanGesture: nil
-                )
+        
+        ForEach(document.emojis) {
+            emoji($0, in: geometry)
         }
+    }
+    
+    @ViewBuilder
+    func emoji(
+        _ emoji: Emoji,
+        in geometry: GeometryProxy
+    ) -> some View {
+        let isSelected = selection
+            .contains(emoji.id)
+        
+        Text(emoji.string)
+            .font(emoji.font)
+            .border(
+                isSelected && selectionGesturePan == .zero ? .red : .clear,
+                width: borderWidth
+            )
+            .scaleEffect(isSelected ? gestureZoom : 1)
+            .position(emoji.position.in(geometry))
+            .offset(
+                isSelected ? selectionGesturePan : .zero
+            )
+            .onTapGesture {
+                selection.toggle(emoji.id)
+            }
+            .gesture(
+                isSelected ? selectionPanGesture: nil
+            )
     }
     
     var zoomGesture: some Gesture {
@@ -99,7 +109,18 @@ private extension EmojiArtDocumentView {
                 gestureZoom = inMotionPinchScale
             }
             .onEnded { endingPinchScale in
-                zoom *= endingPinchScale
+                func updateSelection() {
+                    selection.forEach {
+                        document.resize(
+                            emojiWithId: $0,
+                            by: endingPinchScale
+                        )
+                    }
+                }
+                
+                selection.isEmpty
+                    ? zoom *= endingPinchScale
+                    : updateSelection()
             }
     }
     
@@ -163,6 +184,7 @@ private extension EmojiArtDocumentView {
         let center = geometry
             .frame(in: .local)
             .center
+        
         return .init(
             x: Int((location.x - center.x - pan.width) / zoom),
             y: Int(-(location.y - center.y - pan.height) / zoom)

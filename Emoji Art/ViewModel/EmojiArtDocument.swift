@@ -50,6 +50,7 @@ class EmojiArtDocument: ObservableObject {
     ) {
         let existingPosition = emojiArt[emoji]
             .position
+        
         emojiArt[emoji].position = .init(
             x: existingPosition.x + Int(offset.width),
             y: existingPosition.y - Int(offset.height)
