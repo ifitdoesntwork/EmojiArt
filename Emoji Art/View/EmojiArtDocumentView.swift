@@ -84,6 +84,15 @@ private extension EmojiArtDocumentView {
         
         Text(emoji.string)
             .font(emoji.font)
+            .contextMenu {
+                AnimatedActionButton(
+                    "Delete",
+                    systemImage: "minus.circle",
+                    role: .destructive
+                ) {
+                    document.removeEmoji(emoji)
+                }
+            }
             .border(
                 isSelected && selectionGesturePan == .zero ? .red : .clear,
                 width: borderWidth

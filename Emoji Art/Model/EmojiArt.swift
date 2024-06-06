@@ -28,6 +28,14 @@ struct EmojiArt {
         ))
     }
     
+    mutating func removeEmoji(
+        _ emoji: Emoji
+    ) {
+        emojis
+            .firstIndex { $0.id == emoji.id }
+            .map { _ = emojis.remove(at: $0) }
+    }
+    
     struct Emoji: Identifiable {
         let string: String
         var position: Position
